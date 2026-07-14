@@ -1,0 +1,140 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  FARMER
+  BUYER
+  DRIVER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  IN_TRANSIT
+  DELIVERED
+  DISPUTED
+}
+
+enum ComplaintStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum ResolutionType {
+  CREDIT
+  REPLACE
+  REJECT
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  products   Product[]
+  orders     Order[]      @relation("BuyerOrders")
+  deliveries Order[]      @relation("DriverDeliveries")
+  complaints Complaint[]
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  farmerId      String
+  farmer        User     @relation(fields: [farmerId], references: [id])
+  name          String
+  variety       String
+  unit          String   // e.g., "kg", "box", "dozen"
+  price         Float
+  quantity      Float
+  harvestDate   DateTime
+  shelfLifeDays Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  orderItems         OrderItem[]
+  pricingSuggestions PricingSuggestion[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  buyerId         String
+  buyer           User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  driverId        String?
+  driver          User?       @relation("DriverDeliveries", fields: [driverId], references: [id])
+  status          OrderStatus @default(PENDING)
+  totalAmount     Float
+  deliveryAddress String
+  deliveryNotes   String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  items OrderItem[]
+}
+
+model OrderItem {
+  id                String  @id @default(uuid())
+  orderId           String
+  order             Order   @relation(fields: [orderId], references: [id])
+  productId         String
+  product           Product @relation(fields: [productId], references: [id])
+  quantityOrdered   Float
+  quantityDelivered Float?  // For partial fulfillment tracking
+  priceAtOrder      Float
+
+  // Relations
+  complaints Complaint[]
+}
+
+model Complaint {
+  id                   String          @id @default(uuid())
+  orderItemId          String
+  orderItem            OrderItem       @relation(fields: [orderItemId], references: [id])
+  buyerId              String
+  buyer                User            @relation(fields: [buyerId], references: [id])
+  description          String
+  photoUrl             String?
+  status               ComplaintStatus @default(SUBMITTED)
+  resolutionType       ResolutionType?
+  defectCategory       String?         // AI-populated: freshness, packaging, contamination, etc.
+  severity             String?         // AI-populated: minor, major, critical
+  draftedSupplierAlert String?         // AI-drafted message
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+}
+
+model PricingSuggestion {
+  id             String   @id @default(uuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  suggestedPrice Float
+  originalPrice  Float
+  rationale      String
+  accepted       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+model DemandForecast {
+  id              String   @id @default(uuid())
+  category        String
+  predictedVolume Float
+  confidence      String   // low, medium, high
+  weekOfYear      Int
+  year            Int
+  createdAt       DateTime @default(now())
+}

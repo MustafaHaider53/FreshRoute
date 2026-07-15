@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Leaf, AlertCircle } from 'lucide-react';
 import api from '../utils/api';
+import BuyerTrackingPanel from '../components/BuyerTrackingPanel';
 
 const BuyerDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -77,6 +78,8 @@ const BuyerDashboard: React.FC = () => {
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
           Welcome, <strong>{user?.name}</strong>!
         </p>
+
+        <BuyerTrackingPanel />
 
         <div className="glass card" style={{ maxWidth: '600px', marginBottom: '30px' }}>
           <h3>Submit Quality Complaint</h3>

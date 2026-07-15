@@ -35,6 +35,12 @@ enum ResolutionType {
   REJECT
 }
 
+enum DeliveryStopStatus {
+  ASSIGNED
+  DELIVERED
+  FAILED
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -43,12 +49,13 @@ model User {
   role      Role
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Relations
-  products   Product[]
-  orders     Order[]      @relation("BuyerOrders")
-  deliveries Order[]      @relation("DriverDeliveries")
-  complaints Complaint[]
+  products        Product[]
+  orders          Order[]                  @relation("BuyerOrders")
+  deliveries      Order[]                  @relation("DriverDeliveries")
+  complaints      Complaint[]
+  deliveryReports DeliveryScheduleReport[] @relation("DriverScheduleReports")
 }
 
 model Product {
@@ -71,20 +78,30 @@ model Product {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  buyerId         String
-  buyer           User        @relation("BuyerOrders", fields: [buyerId], references: [id])
-  driverId        String?
-  driver          User?       @relation("DriverDeliveries", fields: [driverId], references: [id])
-  status          OrderStatus @default(PENDING)
-  totalAmount     Float
-  deliveryAddress String
-  deliveryNotes   String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id                    String              @id @default(uuid())
+  buyerId               String
+  buyer                 User                @relation("BuyerOrders", fields: [buyerId], references: [id])
+  driverId              String?
+  driver                User?               @relation("DriverDeliveries", fields: [driverId], references: [id])
+  status                OrderStatus         @default(PENDING)
+  totalAmount           Float
+  deliveryAddress       String
+  deliveryNotes         String?
+  deliveryStopStatus    DeliveryStopStatus?
+  scheduledDeliveryDate DateTime?
+  deliveryLatitude      Float?
+  deliveryLongitude     Float?
+  stopSequence          Int?
+  failedReason          String?
+  deliveredAt           DateTime?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 
   // Relations
   items OrderItem[]
+
+  @@index([driverId, scheduledDeliveryDate])
+  @@index([deliveryStopStatus])
 }
 
 model OrderItem {
@@ -137,4 +154,21 @@ model DemandForecast {
   weekOfYear      Int
   year            Int
   createdAt       DateTime @default(now())
+}
+
+model DeliveryScheduleReport {
+  id             String   @id @default(uuid())
+  driverId       String
+  driver         User     @relation("DriverScheduleReports", fields: [driverId], references: [id])
+  scheduleDate   DateTime
+  totalStops     Int
+  pendingStops   Int
+  deliveredStops Int
+  failedStops    Int
+  summary        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([driverId, scheduleDate])
+  @@index([scheduleDate])
 }

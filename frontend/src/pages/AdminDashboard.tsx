@@ -6,7 +6,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   LineChart, Line, PieChart, Pie, Cell, RadialBarChart, RadialBar, ResponsiveContainer
 } from 'recharts';
-import api from '../utils/api';
+import api, { API_ORIGIN } from '../utils/api';
+import DeliveryAssignmentPanel from '../components/DeliveryAssignmentPanel';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -28,7 +29,7 @@ const AdminDashboard: React.FC = () => {
     fetchDashboardData();
 
     // Setup WebSocket connection
-    const newSocket = io('http://localhost:3000'); // Assuming backend is on port 3000
+    const newSocket = io(API_ORIGIN);
 
     newSocket.on('critical_complaint', (complaint: any) => {
       setAlerts((prev) => [complaint, ...prev]);
@@ -82,8 +83,10 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
+        <DeliveryAssignmentPanel />
+
         {dashboardData ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="analytics-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             
             {/* 1. Waste Rates */}
             <div className="glass card">

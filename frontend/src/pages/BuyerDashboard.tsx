@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import BuyerTrackingPanel from '../components/BuyerTrackingPanel';
 import { io } from 'socket.io-client';
 import { 
   LogOut, Leaf, ShoppingCart, List, 
@@ -235,6 +236,39 @@ const BuyerDashboard: React.FC = () => {
           </button>
         </div>
       </aside>
+      <main className="main-content" style={{ padding: '40px', overflowY: 'auto' }}>
+        <h2 style={{ fontSize: '2rem', marginBottom: '16px' }}>Buyer Marketplace & Traceability</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+          Welcome, <strong>{user?.name}</strong>!
+        </p>
+
+        <BuyerTrackingPanel />
+
+        <div className="glass card" style={{ maxWidth: '600px', marginBottom: '30px' }}>
+          <h3>Submit Quality Complaint</h3>
+          <form onSubmit={submitComplaint} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+            <div className="form-group">
+              <label>Order Item ID</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                value={orderItemId} 
+                onChange={(e) => setOrderItemId(e.target.value)} 
+                required 
+                placeholder="Enter the item ID you received"
+              />
+            </div>
+            <div className="form-group">
+              <label>Complaint Description</label>
+              <textarea 
+                className="form-control" 
+                rows={4} 
+                value={description} 
+                onChange={(e) => setDescription(e.target.value)} 
+                required 
+                placeholder="Describe the defect in detail (e.g., 'The tomatoes arrived bruised and moldy')"
+              />
+            </div>
 
       {/* Main Content */}
       <main className="main-content">

@@ -10,10 +10,13 @@ import { WebsocketsModule } from './websockets/websockets.module';
 import { OrdersModule } from './orders/orders.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { DeliveryModule } from './delivery/delivery.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     AiModule,
     AuthModule,
@@ -22,9 +25,9 @@ import { AnalyticsModule } from './analytics/analytics.module';
     OrdersModule,
     ComplaintsModule,
     AnalyticsModule,
+    DeliveryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-

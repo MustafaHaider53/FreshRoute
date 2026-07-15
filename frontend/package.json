@@ -12,15 +12,18 @@
   "dependencies": {
     "@types/recharts": "^1.8.29",
     "axios": "^1.18.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-leaflet": "^5.0.0",
     "react-is": "^19.2.7",
     "react-router-dom": "^7.18.1",
     "recharts": "^3.9.2",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

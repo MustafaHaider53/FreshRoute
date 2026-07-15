@@ -40,8 +40,8 @@ export declare class InventoryService {
         daysSinceHarvest: number;
         spoilageRisk: "LOW" | "MEDIUM" | "HIGH";
         farmer: {
-            email: string;
             name: string;
+            email: string;
         };
         id: string;
         name: string;

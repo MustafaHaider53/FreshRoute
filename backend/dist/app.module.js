@@ -15,6 +15,8 @@ const database_module_1 = require("./database/database.module");
 const ai_module_1 = require("./ai/ai.module");
 const auth_module_1 = require("./auth/auth.module");
 const inventory_module_1 = require("./inventory/inventory.module");
+const complaints_module_1 = require("./complaints/complaints.module");
+const analytics_module_1 = require("./analytics/analytics.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,6 +28,8 @@ exports.AppModule = AppModule = __decorate([
             ai_module_1.AiModule,
             auth_module_1.AuthModule,
             inventory_module_1.InventoryModule,
+            complaints_module_1.ComplaintsModule,
+            analytics_module_1.AnalyticsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

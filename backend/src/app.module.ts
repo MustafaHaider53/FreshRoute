@@ -6,6 +6,8 @@ import { DatabaseModule } from './database/database.module';
 import { AiModule } from './ai/ai.module';
 import { AuthModule } from './auth/auth.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { ComplaintsModule } from './complaints/complaints.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { InventoryModule } from './inventory/inventory.module';
     AiModule,
     AuthModule,
     InventoryModule,
+    ComplaintsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

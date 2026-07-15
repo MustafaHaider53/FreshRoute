@@ -7,7 +7,7 @@ export declare class AuthController {
         id: string;
         email: string;
         name: string;
-        role: import(".prisma/client").$Enums.Role;
+        role: import("@prisma/client").$Enums.Role;
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
@@ -15,7 +15,7 @@ export declare class AuthController {
             id: string;
             email: string;
             name: string;
-            role: import(".prisma/client").$Enums.Role;
+            role: import("@prisma/client").$Enums.Role;
         };
     }>;
 }

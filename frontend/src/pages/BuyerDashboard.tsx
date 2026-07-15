@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { io } from 'socket.io-client';
 import { 
   LogOut, Leaf, ShoppingCart, List, 
-  Plus, Minus, Check, Package, AlertTriangle, X
+  Plus, Minus, Check, Package, AlertTriangle, X, AlertCircle
 } from 'lucide-react';
 
 interface Product {
@@ -42,7 +41,7 @@ interface Order {
 
 const BuyerDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'marketplace' | 'orders'>('marketplace');
+  const [activeTab, setActiveTab] = useState<'marketplace' | 'orders' | 'complaints'>('marketplace');
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -50,6 +49,17 @@ const BuyerDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // State for Complaint Form
+  const [orderItemId, setOrderItemId] = useState('');
+  const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+  const [manualRequired, setManualRequired] = useState(false);
+  
+  // Fallback states for Complaint
+  const [manualCategory, setManualCategory] = useState('');
+  const [manualSeverity, setManualSeverity] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -143,34 +153,6 @@ const BuyerDashboard: React.FC = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'var(--color-warning)';
-      case 'CONFIRMED': return 'var(--color-primary)';
-      case 'PACKED': return 'var(--color-accent)';
-      case 'IN_TRANSIT': return 'var(--color-info)';
-      case 'DELIVERED': return 'var(--color-success)';
-      default: return 'var(--text-secondary)';
-=======
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { LogOut, Leaf, AlertCircle } from 'lucide-react';
-import api from '../utils/api';
-
-const BuyerDashboard: React.FC = () => {
-  const { user, logout } = useAuth();
-  
-  // State for Complaint Form
-  const [orderItemId, setOrderItemId] = useState('');
-  const [description, setDescription] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState('');
-  const [manualRequired, setManualRequired] = useState(false);
-  
-  // Fallback states
-  const [manualCategory, setManualCategory] = useState('');
-  const [manualSeverity, setManualSeverity] = useState('');
-
   const submitComplaint = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -179,7 +161,7 @@ const BuyerDashboard: React.FC = () => {
     try {
       const response = await api.post('/complaints', {
         orderItemId,
-        buyerId: user?.id || 'mock-buyer-id', // In a real app, from context
+        buyerId: user?.id || 'mock-buyer-id',
         description,
         ...(manualRequired && { defectCategory: manualCategory, severity: manualSeverity })
       });
@@ -198,12 +180,23 @@ const BuyerDashboard: React.FC = () => {
       setMessage('Failed to submit complaint.');
     } finally {
       setIsSubmitting(false);
->>>>>>> 201a22a9919e01ac554d6d5e50bc43c80efe85b1
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'var(--color-warning)';
+      case 'CONFIRMED': return 'var(--color-primary)';
+      case 'PACKED': return 'var(--color-accent)';
+      case 'IN_TRANSIT': return 'var(--color-info)';
+      case 'DELIVERED': return 'var(--color-success)';
+      default: return 'var(--text-secondary)';
     }
   };
 
   return (
     <div className="app-container">
+      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <Leaf size={24} className="text-primary" style={{ stroke: 'var(--color-primary)' }} />
@@ -222,6 +215,12 @@ const BuyerDashboard: React.FC = () => {
               <span>My Orders</span>
             </a>
           </li>
+          <li className="sidebar-item">
+            <a href="#" className={`sidebar-link ${activeTab === 'complaints' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('complaints'); }}>
+              <AlertCircle size={18} />
+              <span>File Complaint</span>
+            </a>
+          </li>
         </ul>
         <div className="sidebar-user">
           <div className="user-profile">
@@ -236,20 +235,26 @@ const BuyerDashboard: React.FC = () => {
           </button>
         </div>
       </aside>
-<<<<<<< HEAD
-      
+
+      {/* Main Content */}
       <main className="main-content">
         <header className="dashboard-header animate-fade">
           <div className="dashboard-title">
-            {activeTab === 'marketplace' ? 'Buyer Marketplace' : 'My Orders'}
-            <span>{activeTab === 'marketplace' ? 'Browse fresh produce from local farmers.' : 'Track your order deliveries in real-time.'}</span>
+            {activeTab === 'marketplace' && 'Buyer Marketplace'}
+            {activeTab === 'orders' && 'My Orders'}
+            {activeTab === 'complaints' && 'Submit Complaint'}
+            <span>
+              {activeTab === 'marketplace' && 'Browse fresh produce from local farmers.'}
+              {activeTab === 'orders' && 'Track your order deliveries in real-time.'}
+              {activeTab === 'complaints' && 'Report issues with order items to local coordinators.'}
+            </span>
           </div>
           {activeTab === 'marketplace' && (
             <button onClick={() => setIsCartOpen(true)} className="btn btn-primary" style={{ position: 'relative' }}>
               <ShoppingCart size={18} /> Cart
-              {cart.length > 0 && (
+              {cart.reduce((sum, item) => sum + item.orderQuantity, 0) > 0 && (
                 <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: 'var(--color-accent)', color: 'white', borderRadius: '50%', padding: '2px 6px', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                  {cart.length}
+                  {cart.reduce((sum, item) => sum + item.orderQuantity, 0)}
                 </span>
               )}
             </button>
@@ -267,36 +272,38 @@ const BuyerDashboard: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'marketplace' ? (
+        {activeTab === 'marketplace' && (
           <section className="grid-3 animate-fade">
             {loading ? (
                <p>Loading marketplace...</p>
             ) : products.length === 0 ? (
                <p>No products available.</p>
             ) : (
-              products.map(product => (
-                <div key={product.id} className="card glass">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{product.name}</h3>
-                    <span className="pill pill-success">${product.price.toFixed(2)} / {product.unit}</span>
-                  </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '12px' }}>
-                    Variety: {product.variety} <br/>
-                    Farm: {product.farmer?.name || 'Unknown'} <br/>
-                    Available: {product.quantity} {product.unit}
-                  </p>
-                  <button 
-                    onClick={() => addToCart(product)} 
-                    className="btn btn-primary btn-block"
-                    disabled={product.quantity <= 0}
-                  >
-                    <Plus size={16} /> Add to Cart
-                  </button>
-                </div>
-              ))
+               products.map(product => (
+                 <div key={product.id} className="card glass">
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                     <h3 style={{ fontSize: '1.2rem', marginBottom: '8px' }}>{product.name}</h3>
+                     <span className="pill pill-success">${product.price.toFixed(2)} / {product.unit}</span>
+                   </div>
+                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '12px' }}>
+                     Variety: {product.variety} <br/>
+                     Farm: {product.farmer?.name || 'Unknown'} <br/>
+                     Available: {product.quantity} {product.unit}
+                   </p>
+                   <button 
+                     onClick={() => addToCart(product)} 
+                     className="btn btn-primary btn-block"
+                     disabled={product.quantity <= 0}
+                   >
+                     <Plus size={16} /> Add to Cart
+                   </button>
+                 </div>
+               ))
             )}
           </section>
-        ) : (
+        )}
+
+        {activeTab === 'orders' && (
           <section className="animate-fade">
             {orders.length === 0 ? (
               <p>You have no orders yet.</p>
@@ -349,6 +356,69 @@ const BuyerDashboard: React.FC = () => {
           </section>
         )}
 
+        {activeTab === 'complaints' && (
+          <div className="glass card" style={{ maxWidth: '600px' }}>
+            <h3>Submit Quality Complaint</h3>
+            <form onSubmit={submitComplaint} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+              <div className="form-group">
+                <label>Order Item ID</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  value={orderItemId} 
+                  onChange={(e) => setOrderItemId(e.target.value)} 
+                  required 
+                  placeholder="Enter the item ID you received"
+                />
+              </div>
+              <div className="form-group">
+                <label>Complaint Description</label>
+                <textarea 
+                  className="form-control" 
+                  rows={4} 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)} 
+                  required 
+                  placeholder="Describe the defect in detail (e.g., 'The tomatoes arrived bruised and moldy')"
+                />
+              </div>
+
+              {manualRequired && (
+                <div className="alert alert-warning" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <AlertCircle size={18} />
+                    <strong>Manual Classification Required</strong>
+                  </div>
+                  <div className="form-group">
+                    <label>Defect Category</label>
+                    <select className="form-control" value={manualCategory} onChange={(e) => setManualCategory(e.target.value)} required>
+                      <option value="">Select Category</option>
+                      <option value="FRESHNESS">Freshness</option>
+                      <option value="PACKAGING">Packaging</option>
+                      <option value="CONTAMINATION">Contamination</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Severity</label>
+                    <select className="form-control" value={manualSeverity} onChange={(e) => setManualSeverity(e.target.value)} required>
+                      <option value="">Select Severity</option>
+                      <option value="MINOR">Minor</option>
+                      <option value="MAJOR">Major</option>
+                      <option value="CRITICAL">Critical</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : (manualRequired ? 'Submit Manual Classification' : 'Submit to AI Classifier')}
+              </button>
+              {message && <div style={{ marginTop: '10px', color: manualRequired ? 'orange' : 'green' }}>{message}</div>}
+            </form>
+          </div>
+        )}
+
         {isCartOpen && (
           <>
             <div className="drawer-overlay" onClick={() => setIsCartOpen(false)} />
@@ -392,74 +462,6 @@ const BuyerDashboard: React.FC = () => {
             </div>
           </>
         )}
-=======
-      <main className="main-content" style={{ padding: '40px', overflowY: 'auto' }}>
-        <h2 style={{ fontSize: '2rem', marginBottom: '16px' }}>Buyer Marketplace & Traceability</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
-          Welcome, <strong>{user?.name}</strong>!
-        </p>
-
-        <div className="glass card" style={{ maxWidth: '600px', marginBottom: '30px' }}>
-          <h3>Submit Quality Complaint</h3>
-          <form onSubmit={submitComplaint} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-            <div className="form-group">
-              <label>Order Item ID</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                value={orderItemId} 
-                onChange={(e) => setOrderItemId(e.target.value)} 
-                required 
-                placeholder="Enter the item ID you received"
-              />
-            </div>
-            <div className="form-group">
-              <label>Complaint Description</label>
-              <textarea 
-                className="form-control" 
-                rows={4} 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)} 
-                required 
-                placeholder="Describe the defect in detail (e.g., 'The tomatoes arrived bruised and moldy')"
-              />
-            </div>
-
-            {manualRequired && (
-              <div className="alert alert-warning" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  <AlertCircle size={18} />
-                  <strong>Manual Classification Required</strong>
-                </div>
-                <div className="form-group">
-                  <label>Defect Category</label>
-                  <select className="form-control" value={manualCategory} onChange={(e) => setManualCategory(e.target.value)} required>
-                    <option value="">Select Category</option>
-                    <option value="FRESHNESS">Freshness</option>
-                    <option value="PACKAGING">Packaging</option>
-                    <option value="CONTAMINATION">Contamination</option>
-                    <option value="OTHER">Other</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Severity</label>
-                  <select className="form-control" value={manualSeverity} onChange={(e) => setManualSeverity(e.target.value)} required>
-                    <option value="">Select Severity</option>
-                    <option value="MINOR">Minor</option>
-                    <option value="MAJOR">Major</option>
-                    <option value="CRITICAL">Critical</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : (manualRequired ? 'Submit Manual Classification' : 'Submit to AI Classifier')}
-            </button>
-            {message && <div style={{ marginTop: '10px', color: manualRequired ? 'orange' : 'green' }}>{message}</div>}
-          </form>
-        </div>
->>>>>>> 201a22a9919e01ac554d6d5e50bc43c80efe85b1
       </main>
     </div>
   );

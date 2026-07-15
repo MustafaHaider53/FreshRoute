@@ -11,9 +11,9 @@ export declare class ComplaintsService {
     createComplaint(dto: CreateComplaintDto): Promise<{
         manualRequired: boolean;
         id: string;
-        createdAt: Date;
         buyerId: string;
         status: import("@prisma/client").$Enums.ComplaintStatus;
+        createdAt: Date;
         updatedAt: Date;
         description: string;
         orderItemId: string;
@@ -25,9 +25,9 @@ export declare class ComplaintsService {
     }>;
     resolveComplaint(id: string, dto: ResolveComplaintDto): Promise<{
         id: string;
-        createdAt: Date;
         buyerId: string;
         status: import("@prisma/client").$Enums.ComplaintStatus;
+        createdAt: Date;
         updatedAt: Date;
         description: string;
         orderItemId: string;

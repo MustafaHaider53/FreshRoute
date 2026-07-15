@@ -15,11 +15,9 @@
     "lucide-react": "^1.24.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-is": "^19.2.7",
     "react-router-dom": "^7.18.1",
-<<<<<<< HEAD
-=======
     "recharts": "^3.9.2",
->>>>>>> 201a22a9919e01ac554d6d5e50bc43c80efe85b1
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {

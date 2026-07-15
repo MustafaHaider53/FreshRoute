@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { 
   Plus, Trash2, Edit3, Sparkles, LogOut, Leaf, 
-  Package, Calendar, Check, X, AlertTriangle, RefreshCw
+  Package, Check, X, AlertTriangle, RefreshCw, TrendingUp
 } from 'lucide-react';
+import { io } from 'socket.io-client';
 
 interface Product {
   id: string;
@@ -28,10 +29,16 @@ interface PricingSuggestion {
 
 const FarmerDashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<'inventory' | 'forecast'>('inventory');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Forecast states
+  const [forecast, setForecast] = useState<any>(null);
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [forecastCategory, setForecastCategory] = useState('all');
 
   // Modal control states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -54,7 +61,45 @@ const FarmerDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
+
+    const token = localStorage.getItem('freshroute_token');
+    const newSocket = io('http://localhost:3000', {
+      auth: { token },
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Farmer connected to WebSocket');
+    });
+
+    newSocket.on('order.confirmed', (data) => {
+      setSuccessMsg(`Notification: ${data.message}`);
+      setTimeout(() => setSuccessMsg(null), 8000);
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
   }, []);
+
+  const fetchForecast = async () => {
+    setForecastLoading(true);
+    setError(null);
+    try {
+      const res = await api.get(`/ai/forecast?category=${forecastCategory}`);
+      setForecast(res.data);
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to fetch AI forecast. It might be offline.');
+    } finally {
+      setForecastLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'forecast') {
+      fetchForecast();
+    }
+  }, [activeTab, forecastCategory]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -195,17 +240,17 @@ const FarmerDashboard: React.FC = () => {
         </div>
         <ul className="sidebar-menu">
           <li className="sidebar-item">
-            <a href="#" className="sidebar-link active">
+            <a href="#" className={`sidebar-link ${activeTab === 'inventory' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('inventory'); }}>
               <Package size={18} />
               <span>Inventory Manager</span>
             </a>
           </li>
           {/* Placeholders for teammates' modules (disabled/readonly for Mustafa) */}
-          <li className="sidebar-item" style={{ opacity: 0.4 }}>
-            <span className="sidebar-link">
-              <Calendar size={18} />
-              <span>Farmer Orders</span>
-            </span>
+          <li className="sidebar-item">
+            <a href="#" className={`sidebar-link ${activeTab === 'forecast' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('forecast'); }}>
+              <TrendingUp size={18} />
+              <span>Demand Forecast</span>
+            </a>
           </li>
         </ul>
         <div className="sidebar-user">
@@ -228,12 +273,18 @@ const FarmerDashboard: React.FC = () => {
       <main className="main-content">
         <header className="dashboard-header animate-fade">
           <div className="dashboard-title">
-            Farmer Inventory Dashboard
-            <span>Manage listings, monitor perishable products, and optimize margins with Groq AI.</span>
+            {activeTab === 'inventory' ? 'Farmer Inventory Dashboard' : 'AI Demand Forecast'}
+            <span>
+              {activeTab === 'inventory' 
+                ? 'Manage listings, monitor perishable products, and optimize margins with Groq AI.'
+                : 'Predict next week\'s order volume using AI to optimize your harvest schedule.'}
+            </span>
           </div>
-          <button onClick={() => setIsAddModalOpen(true)} className="btn btn-primary">
-            <Plus size={18} /> Add Produce Listing
-          </button>
+          {activeTab === 'inventory' && (
+            <button onClick={() => setIsAddModalOpen(true)} className="btn btn-primary">
+              <Plus size={18} /> Add Produce Listing
+            </button>
+          )}
         </header>
 
         {/* Global Notifications */}
@@ -249,7 +300,9 @@ const FarmerDashboard: React.FC = () => {
         )}
 
         {/* Core Metrics Cards */}
-        <section className="grid-3 animate-fade">
+        {activeTab === 'inventory' ? (
+          <>
+            <section className="grid-3 animate-fade">
           <div className="card glass">
             <div className="comparison-label">Active Listings</div>
             <div className="stat-value">{totalListings}</div>
@@ -515,6 +568,65 @@ const FarmerDashboard: React.FC = () => {
               ) : null}
             </div>
           </>
+        )}
+          </>
+        ) : (
+          <section className="animate-fade glass" style={{ padding: '30px', borderRadius: 'var(--border-radius-lg)', marginTop: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={20} style={{ color: 'var(--color-accent)' }} /> 
+                Grok AI Forecaster
+              </h3>
+              <select 
+                className="form-control" 
+                style={{ width: '200px' }}
+                value={forecastCategory}
+                onChange={(e) => setForecastCategory(e.target.value)}
+              >
+                <option value="all">All Categories</option>
+                <option value="Tomatoes">Tomatoes</option>
+                <option value="Lettuce">Lettuce</option>
+                <option value="Carrots">Carrots</option>
+                <option value="Apples">Apples</option>
+              </select>
+            </div>
+
+            {forecastLoading ? (
+              <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                <RefreshCw className="shimmer" size={32} style={{ animation: 'spin 2s linear infinite' }} /> 
+                <span>Analyzing past 8 weeks of market data...</span>
+              </div>
+            ) : forecast ? (
+              <div className="grid-3">
+                <div className="card glass">
+                  <div className="comparison-label">Predicted Demand (Next Week)</div>
+                  <div className="stat-value">{forecast.predictedVolume} <span style={{ fontSize: '1rem', fontWeight: 'normal' }}>Units</span></div>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>For Week {forecast.weekOfYear}, {forecast.year}</span>
+                </div>
+                <div className="card glass">
+                  <div className="comparison-label">AI Confidence</div>
+                  <div className="stat-value" style={{ 
+                    color: forecast.confidence === 'high' ? 'var(--color-success)' : 
+                           forecast.confidence === 'medium' ? 'var(--color-warning)' : 'var(--color-danger)' 
+                  }}>
+                    {forecast.confidence.toUpperCase()}
+                  </div>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Based on market volatility</span>
+                </div>
+                <div className="card glass" style={{ borderLeft: forecast.source === 'FALLBACK_AVERAGE' ? '3px solid var(--color-danger)' : '1px solid var(--glass-border)' }}>
+                  <div className="comparison-label">Data Source</div>
+                  <div className="stat-value" style={{ color: forecast.source === 'FALLBACK_AVERAGE' ? 'var(--color-danger)' : 'var(--color-accent)', fontSize: '1.5rem' }}>
+                    {forecast.source === 'FALLBACK_AVERAGE' ? 'Rolling Average' : 'Grok Llama-3.3'}
+                  </div>
+                  {forecast.source === 'FALLBACK_AVERAGE' && (
+                    <span style={{ color: 'var(--color-danger)', fontSize: '0.85rem' }}>AI Offline: Using 4-wk fallback</span>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Select a category to view the forecast.</p>
+            )}
+          </section>
         )}
       </main>
     </div>

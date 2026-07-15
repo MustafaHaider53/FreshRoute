@@ -6,28 +6,28 @@ export declare class ComplaintsController {
     create(createComplaintDto: CreateComplaintDto): Promise<{
         manualRequired: boolean;
         id: string;
+        buyerId: string;
+        status: import("@prisma/client").$Enums.ComplaintStatus;
         createdAt: Date;
         updatedAt: Date;
         description: string;
         orderItemId: string;
-        buyerId: string;
         photoUrl: string | null;
-        resolutionType: import(".prisma/client").$Enums.ResolutionType | null;
-        status: import(".prisma/client").$Enums.ComplaintStatus;
+        resolutionType: import("@prisma/client").$Enums.ResolutionType | null;
         defectCategory: string | null;
         severity: string | null;
         draftedSupplierAlert: string | null;
     }>;
     resolve(id: string, resolveComplaintDto: ResolveComplaintDto): Promise<{
         id: string;
+        buyerId: string;
+        status: import("@prisma/client").$Enums.ComplaintStatus;
         createdAt: Date;
         updatedAt: Date;
         description: string;
         orderItemId: string;
-        buyerId: string;
         photoUrl: string | null;
-        resolutionType: import(".prisma/client").$Enums.ResolutionType | null;
-        status: import(".prisma/client").$Enums.ComplaintStatus;
+        resolutionType: import("@prisma/client").$Enums.ResolutionType | null;
         defectCategory: string | null;
         severity: string | null;
         draftedSupplierAlert: string | null;
@@ -38,7 +38,7 @@ export declare class ComplaintsController {
         deliveryRunInfo: {
             driverName: string;
             deliveryAddress: string;
-            status: import(".prisma/client").$Enums.OrderStatus;
+            status: import("@prisma/client").$Enums.OrderStatus;
         };
         productDetails: {
             name: string;

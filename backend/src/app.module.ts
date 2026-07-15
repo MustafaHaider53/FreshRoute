@@ -6,6 +6,8 @@ import { DatabaseModule } from './database/database.module';
 import { AiModule } from './ai/ai.module';
 import { AuthModule } from './auth/auth.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { WebsocketsModule } from './websockets/websockets.module';
+import { OrdersModule } from './orders/orders.module';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -19,6 +21,8 @@ import { DeliveryModule } from './delivery/delivery.module';
     AiModule,
     AuthModule,
     InventoryModule,
+    WebsocketsModule,
+    OrdersModule,
     ComplaintsModule,
     AnalyticsModule,
     DeliveryModule,

@@ -37,8 +37,8 @@ export declare class InventoryController {
         daysSinceHarvest: number;
         spoilageRisk: "LOW" | "MEDIUM" | "HIGH";
         farmer: {
-            email: string;
             name: string;
+            email: string;
         };
         id: string;
         name: string;

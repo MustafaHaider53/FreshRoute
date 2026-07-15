@@ -6,22 +6,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AiModule = void 0;
+exports.OrdersModule = void 0;
 const common_1 = require("@nestjs/common");
-const ai_service_1 = require("./ai.service");
-const ai_controller_1 = require("./ai.controller");
-const demand_forecast_service_1 = require("./demand-forecast.service");
+const orders_controller_1 = require("./orders.controller");
+const orders_service_1 = require("./orders.service");
 const database_module_1 = require("../database/database.module");
-let AiModule = class AiModule {
+const websockets_module_1 = require("../websockets/websockets.module");
+let OrdersModule = class OrdersModule {
 };
-exports.AiModule = AiModule;
-exports.AiModule = AiModule = __decorate([
-    (0, common_1.Global)(),
+exports.OrdersModule = OrdersModule;
+exports.OrdersModule = OrdersModule = __decorate([
     (0, common_1.Module)({
-        imports: [database_module_1.DatabaseModule],
-        controllers: [ai_controller_1.AiController],
-        providers: [ai_service_1.AiService, demand_forecast_service_1.DemandForecastService],
-        exports: [ai_service_1.AiService],
+        imports: [database_module_1.DatabaseModule, websockets_module_1.WebsocketsModule],
+        controllers: [orders_controller_1.OrdersController],
+        providers: [orders_service_1.OrdersService],
     })
-], AiModule);
-//# sourceMappingURL=ai.module.js.map
+], OrdersModule);
+//# sourceMappingURL=orders.module.js.map
